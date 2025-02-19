@@ -2,11 +2,12 @@ const Review = require('../models/Review');
 
 exports.createReview = async (req, res) => {
     try {
-        const { name, rating, review } = req.body;
-        const newReview = new Review({ name, rating, review });
+        const { name, rating, review, userType } = req.body;
+        const newReview = new Review({ name, rating, review, userType });
         await newReview.save();
         res.status(201).json(newReview);
     } catch (err) {
+        console.log(err);
         res.status(500).json({ error: err.message });
     }
 };

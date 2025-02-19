@@ -2,11 +2,15 @@ const Reservation = require('../models/Reservation');
 
 exports.addReservation = async (req, res) => {
     try {
-        const { name, email, date, guests } = req.body;
-        const newReservation = new Reservation({ name, email, date, guests });
+        console.log(req.body);
+        
+        const { name, email, date, guests, tables } = req.body;
+        const newReservation = new Reservation({ name, email, date, guests, tables });
         await newReservation.save();
         res.status(201).json(newReservation);
     } catch (err) {
+        console.log(err);
+        
         res.status(500).json({ error: err.message });
     }
 };

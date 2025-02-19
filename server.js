@@ -7,10 +7,19 @@ const reviewRoutes = require('./routes/reviewRoutes');
 const galleryRoutes = require('./routes/galleryRoutes');
 const reservationRoutes = require('./routes/reservationRoutes');
 
+const allowedOrigins = ['https://1805club.vercel.app', ];
+
 const app = express();
 app.use(express.json());
-app.use(cors());
-
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    }
+}));
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('MongoDB Connected'))
     .catch(err => console.log(err));

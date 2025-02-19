@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 
 const ReviewSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    rating: { type: Number, required: true, min: 1, max: 5 },
+    userType: { type: String, required: true },
+    rating: { type: Number, required: true, min: 1, max: 5, default: 1 },
     review: { type: String, required: true },
     createdAt: { type: Date, default: Date.now }
 });

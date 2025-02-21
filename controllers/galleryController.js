@@ -18,23 +18,29 @@ exports.getGallery = async (req, res) => {
     }
 };
 
-exports.createGalleryImage = async (req, res) => {
+exports.createGalleryImages = async (req, res) => {
     try {
-        // Ensure an image is provided
-        if (!req.file) {
-            return res.status(400).json({ error: 'No image file uploaded' });
+        // Ensure images are provided
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: 'No image files uploaded' });
         }
 
-        // Upload image to Cloudinary
-        const result = await cloudinary.uploader.upload(req.file.path, {
-            folder: 'gallery' // Optional: Set a folder in Cloudinary
-        });
+        const uploadedImages = [];
 
-        // Save the Cloudinary URL in the database
-        const newImage = new Gallery({ imageUrl: result.secure_url });
-        await newImage.save();
+        for (const file of req.files) {
+            // Upload image to Cloudinary
+            const result = await cloudinary.uploader.upload(file.path, {
+                folder: 'gallery' // Optional: Set a folder in Cloudinary
+            });
 
-        res.status(201).json(newImage);
+            // Save each Cloudinary URL in the database
+            const newImage = new Gallery({ imageUrl: result.secure_url });
+            await newImage.save();
+
+            uploadedImages.push(newImage);
+        }
+
+        res.status(201).json({ images: uploadedImages });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -43,9 +49,32 @@ exports.createGalleryImage = async (req, res) => {
 
 exports.deleteGalleryImage = async (req, res) => {
     try {
-        await Gallery.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Image deleted' });
+        const { imageUrl } = req.body;
+
+        if (!imageUrl) {
+            return res.status(400).json({ error: 'Image URL is required' });
+        }
+
+        // Find the gallery document by imageUrl
+        const imageDoc = await Gallery.findOne({ imageUrl });
+        if (!imageDoc) {
+            return res.status(404).json({ error: 'Image not found' });
+        }
+
+        // Extract public_id from Cloudinary URL
+        const parts = imageUrl.split('/');
+        const publicIdWithExtension = parts[parts.length - 1]; // Get the last part (e.g., "image123.jpg")
+        const publicId = `gallery/${publicIdWithExtension.split('.')[0]}`; // Remove extension
+
+        // Delete image from Cloudinary
+        await cloudinary.uploader.destroy(publicId);
+
+        // Delete the document from database
+        await Gallery.findByIdAndDelete(imageDoc._id);
+
+        res.json({ message: 'Image deleted successfully' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+

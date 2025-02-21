@@ -23,3 +23,18 @@ exports.getReservations = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.deleteReservation = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const reservation = await Reservation.findByIdAndDelete(id);
+
+        if (!reservation) {
+            return res.status(404).json({ message: "Reservation not found" });
+        }
+
+        res.json({ message: "Reservation deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

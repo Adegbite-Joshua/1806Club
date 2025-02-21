@@ -7,7 +7,7 @@ const reviewRoutes = require('./routes/reviewRoutes');
 const galleryRoutes = require('./routes/galleryRoutes');
 const reservationRoutes = require('./routes/reservationRoutes');
 
-const allowedOrigins = ['https://1805club.vercel.app', ];
+const allowedOrigins = ['https://1805club.vercel.app'];
 
 const app = express();
 app.use(express.json());
